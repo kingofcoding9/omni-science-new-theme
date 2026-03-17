@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Omni-Science | The Nexus</title>
+    
+    <!-- Space Grotesk Font for a high-end technical feel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Space Grotesk', 'sans-serif'] },
+                    colors: {
+                        omni: {
+                            base: '#030712', // Deep navy/black
+                            blue: '#005eb8', // Sourced from logo
+                            red: '#c8102e',  // Sourced from logo
+                            purple: '#6f2c91' // Sourced from banner gradient transition
+                        }
+                    },
+                    animation: {
+                        'blob': 'blob 15s infinite alternate',
+                        'blob-reverse': 'blob-reverse 20s infinite alternate',
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '100%': { transform: 'translate(100px, 50px) scale(1.2)' },
+                        },
+                        'blob-reverse': {
+                            '0%': { transform: 'translate(0px, 0px) scale(1.2)' },
+                            '100%': { transform: 'translate(-100px, -50px) scale(1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #030712;
+            color: #ffffff;
+            overflow-x: hidden;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        /* Ambient Background Layers */
+        #bg-base {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at bottom right, #0f1423 0%, #030712 100%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Dimmed the orbs so they don't wash out the screen */
+        #ambient-orbs {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            overflow: hidden;
+            opacity: 0.12; 
+        }
+
+        /* 2D HTML5 Canvas */
+        #network-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* Page Transition Logic */
+        .page-section {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            min-height: 100vh;
+            padding-top: 120px;
+            padding-bottom: 50px;
+        }
+
+        .page-section.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Premium Glassmorphism - Made slightly darker to help text contrast */
+        .glass-panel {
+            background: rgba(10, 15, 25, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .drawer-blur {
+            background: rgba(3, 7, 18, 0.7);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+
+        /* Interactive Glow Effects */
+        .glow-hover {
+            transition: all 0.4s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .glow-hover:hover {
+            box-shadow: 0 10px 30px rgba(0, 94, 184, 0.15), inset 0 0 15px rgba(200, 16, 46, 0.05);
+            transform: translateY(-5px);
+            background: rgba(20, 30, 50, 0.8);
+            border-bottom: 2px solid #005eb8;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #030712; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #005eb8; }
+        
+        .nav-link.active-link {
+            color: #ffffff;
+            font-weight: 700;
+            position: relative;
+        }
+        .nav-link.active-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to right, #005eb8, #c8102e);
+        }
+
+        /* Helper class to ensure paragraph text is always readable over moving backgrounds */
+        .text-readable-shadow {
+            text-shadow: 0px 2px 8px rgba(0,0,0,0.9);
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-omni-blue selection:text-white">
+
+    <!-- ================= BACKGROUND LAYERS ================= -->
+    <div id="bg-base"></div>
+
+    <div id="ambient-orbs">
+        <div class="absolute top-[-10%] left-[-10%] w-[40rem] h-[40rem] bg-omni-blue rounded-full mix-blend-screen filter blur-[120px] animate-blob"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[40rem] h-[40rem] bg-omni-red rounded-full mix-blend-screen filter blur-[120px] animate-blob-reverse"></div>
+    </div>
+
+    <canvas id="network-canvas"></canvas>
+
+    <!-- ================= NAVIGATION ================= -->
+    <nav class="fixed w-full z-50 top-0 transition-all duration-300 glass-panel border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center relative">
+            
+            <!-- Logo -->
+            <button onclick="navigateTo('home')" class="flex items-center group focus:outline-none z-50 h-10">
+                <img src="Omni-Science Banner.jpg" alt="Omni-Science Logo" class="h-full object-contain bg-white/5 rounded px-2 py-1 border border-white/10 group-hover:bg-white/10 transition-colors" onerror="this.style.display='none'; document.getElementById('fallback-logo').style.display='flex';">
+                
+                <!-- Fallback Logo (Adjusted for high contrast readability) -->
+                <div id="fallback-logo" class="hidden items-center gap-2">
+                    <i data-lucide="aperture" class="text-omni-blue w-8 h-8"></i>
+                    <span class="text-2xl font-bold tracking-widest text-white">OMNI<span class="text-gray-400">-SCIENCE</span></span>
+                </div>
+            </button>
+            
+            <!-- Desktop Links -->
+            <div class="hidden md:flex gap-10 items-center text-sm font-medium text-gray-400 tracking-wider uppercase">
+                <button onclick="navigateTo('home')" id="nav-home" class="nav-link hover:text-white transition-colors">Nexus</button>
+                <button onclick="navigateTo('solutions')" id="nav-solutions" class="nav-link hover:text-white transition-colors">Modules</button>
+                <button onclick="navigateTo('about')" id="nav-about" class="nav-link hover:text-white transition-colors">Core</button>
+                <button onclick="navigateTo('contact')" id="nav-contact" class="nav-link hover:text-white transition-colors">Terminal</button>
+                <button onclick="navigateTo('contact')" class="px-6 py-2.5 rounded bg-gradient-to-r from-omni-blue to-omni-red text-white hover:from-omni-red hover:to-omni-blue transition-all shadow-[0_0_15px_rgba(0,94,184,0.4)] font-bold">
+                    INITIALIZE
+                </button>
+            </div>
+
+            <!-- Mobile Menu Toggle Button -->
+            <button id="mobile-menu-btn" class="md:hidden relative text-white focus:outline-none p-2 h-12 w-12 flex items-center justify-center overflow-hidden group border border-transparent hover:border-white/10 transition-all duration-300 z-50 bg-black/40 rounded-sm">
+                <span class="absolute left-0 top-0 w-[2px] h-full bg-omni-blue transform -translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></span>
+                <span class="absolute right-0 bottom-0 w-[2px] h-full bg-omni-red transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></span>
+                <div id="icon-container" class="relative z-10 transition-transform duration-500 flex items-center justify-center">
+                    <i data-lucide="menu" class="w-7 h-7"></i>
+                </div>
+            </button>
+        </div>
+
+        <!-- Mobile Slide-In Drawer -->
+        <div id="mobile-menu" class="fixed top-0 left-0 h-screen w-[85vw] max-w-sm drawer-blur border-r border-white/10 flex flex-col pt-32 px-8 gap-8 md:hidden transform -translate-x-full transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] z-40 shadow-[20px_0_50px_rgba(0,0,0,0.8)]">
+            
+            <button onclick="navigateTo('home'); toggleMobileMenu();" class="text-left text-3xl text-white hover:text-omni-blue hover:translate-x-3 transition-all uppercase tracking-widest font-black flex items-center gap-4 group">
+                <span class="w-0 h-[2px] bg-gradient-to-r from-omni-blue to-omni-red group-hover:w-8 transition-all duration-300"></span> Nexus
+            </button>
+            
+            <button onclick="navigateTo('solutions'); toggleMobileMenu();" class="text-left text-3xl text-white hover:text-omni-blue hover:translate-x-3 transition-all uppercase tracking-widest font-black flex items-center gap-4 group">
+                <span class="w-0 h-[2px] bg-gradient-to-r from-omni-blue to-omni-red group-hover:w-8 transition-all duration-300"></span> Modules
+            </button>
+            
+            <button onclick="navigateTo('about'); toggleMobileMenu();" class="text-left text-3xl text-white hover:text-omni-blue hover:translate-x-3 transition-all uppercase tracking-widest font-black flex items-center gap-4 group">
+                <span class="w-0 h-[2px] bg-gradient-to-r from-omni-blue to-omni-red group-hover:w-8 transition-all duration-300"></span> Core
+            </button>
+            
+            <button onclick="navigateTo('contact'); toggleMobileMenu();" class="text-left text-3xl text-white hover:text-omni-blue hover:translate-x-3 transition-all uppercase tracking-widest font-black flex items-center gap-4 group">
+                <span class="w-0 h-[2px] bg-gradient-to-r from-omni-blue to-omni-red group-hover:w-8 transition-all duration-300"></span> Terminal
+            </button>
+
+            <div class="mt-auto pb-12">
+                <div class="text-xs text-omni-blue uppercase tracking-widest border-t border-white/10 pt-6 font-bold">System Status: Online</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ================= MAIN CONTENT ================= -->
+    <main id="main-content" class="relative z-10 transition-opacity duration-500 ease-in-out">
+
+        <!-- ================= PAGE: HOME ================= -->
+        <div id="page-home" class="page-section active max-w-7xl mx-auto px-6 flex flex-col justify-center items-center text-center min-h-[90vh]">
+            
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/20 bg-black/40 text-white text-xs font-bold uppercase tracking-[0.2em] mb-8 shadow-lg backdrop-blur-sm">
+                <span class="w-2 h-2 rounded-full bg-omni-red animate-pulse"></span>
+                Omni-Science Protocol v.9.0
+            </div>
+            
+            <!-- Headline: High Contrast White/Silver instead of dark gradient -->
+            <h1 class="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter mb-4 leading-[1.1] text-white">
+                DATA SYNERGY.<br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-gray-400">ENTERPRISE SCALE.</span>
+            </h1>
+
+            <!-- Brand Accent Line -->
+            <div class="h-1.5 w-32 bg-gradient-to-r from-omni-blue via-omni-purple to-omni-red rounded-full mb-8 mx-auto shadow-[0_0_15px_rgba(0,94,184,0.5)]"></div>
+            
+            <!-- Paragraph: Lighter text color and text-shadow for readability -->
+            <p class="text-lg md:text-xl text-gray-200 mb-12 max-w-3xl mx-auto font-medium tracking-wide text-readable-shadow">
+                We synthesize petabytes of atmospheric, financial, and synthetic data into a single pane of glass. The ultimate cognitive engine for your enterprise.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-6 justify-center items-center w-full">
+                <!-- Primary Button utilizing brand colors -->
+                <button onclick="navigateTo('solutions')" class="group relative px-8 py-4 bg-white text-black font-bold uppercase tracking-wider overflow-hidden rounded shadow-xl">
+                    <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-omni-blue to-omni-red transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></div>
+                    <span class="relative z-10 flex items-center gap-2 group-hover:text-white transition-colors">
+                        Explore Modules <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ================= PAGE: SOLUTIONS ================= -->
+        <div id="page-solutions" class="page-section max-w-7xl mx-auto px-6">
+            <div class="mb-16 md:mt-12 text-center md:text-left">
+                <h2 class="text-4xl md:text-6xl font-black tracking-tight mb-4 uppercase text-white">Ecosystem <span class="text-transparent bg-clip-text bg-gradient-to-r from-omni-blue to-omni-red">Modules</span></h2>
+                <p class="text-gray-300 text-lg max-w-2xl font-medium text-readable-shadow">Deployable sub-routines engineered to overwrite industry bottlenecks. Select a module to review its telemetry.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="glass-panel p-8 rounded-xl glow-hover group cursor-pointer">
+                    <div class="w-14 h-14 rounded-lg bg-omni-blue/20 border border-omni-blue/50 flex items-center justify-center mb-8 text-omni-blue group-hover:scale-110 transition-transform">
+                        <i data-lucide="brain-circuit" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3 tracking-wide text-white">Cognitive Core</h3>
+                    <p class="text-gray-300 text-sm leading-relaxed mb-6 font-medium">
+                        This module utilizes deep learning architectures to predict market fluctuations before they occur.
+                    </p>
+                    <div class="h-1 w-full bg-white/10 rounded overflow-hidden">
+                        <div class="h-full bg-omni-blue w-3/4"></div>
+                    </div>
+                    <div class="mt-2 text-xs text-omni-blue text-right uppercase tracking-widest font-bold">75% Optimized</div>
+                </div>
+
+                <div class="glass-panel p-8 rounded-xl glow-hover group cursor-pointer">
+                    <div class="w-14 h-14 rounded-lg bg-omni-red/20 border border-omni-red/50 flex items-center justify-center mb-8 text-omni-red group-hover:scale-110 transition-transform">
+                        <i data-lucide="shield-alert" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3 tracking-wide text-white">Aegis Firewall</h3>
+                    <p class="text-gray-300 text-sm leading-relaxed mb-6 font-medium">
+                        Quantum-resistant cryptography that actively hunts and neutralizes internal and external network anomalies.
+                    </p>
+                    <div class="h-1 w-full bg-white/10 rounded overflow-hidden">
+                        <div class="h-full bg-omni-red w-full"></div>
+                    </div>
+                    <div class="mt-2 text-xs text-omni-red text-right uppercase tracking-widest font-bold">System Secure</div>
+                </div>
+
+                <div class="glass-panel p-8 rounded-xl glow-hover group cursor-pointer">
+                    <div class="w-14 h-14 rounded-lg bg-omni-purple/20 border border-omni-purple/50 flex items-center justify-center mb-8 text-omni-purple group-hover:scale-110 transition-transform">
+                        <i data-lucide="satellite" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3 tracking-wide text-white">Orbital Sync</h3>
+                    <p class="text-gray-300 text-sm leading-relaxed mb-6 font-medium">
+                        Zero-latency global synchronization utilizing low-earth orbit satellite arrays for persistent connection.
+                    </p>
+                    <div class="h-1 w-full bg-white/10 rounded overflow-hidden">
+                        <div class="h-full bg-omni-purple w-1/2"></div>
+                    </div>
+                    <div class="mt-2 text-xs text-omni-purple text-right uppercase tracking-widest font-bold">Connecting...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PAGE: ABOUT (CORE) ================= -->
+        <div id="page-about" class="page-section max-w-5xl mx-auto px-6">
+             <div class="mb-16 md:mt-12 text-center">
+                <h2 class="text-4xl md:text-6xl font-black tracking-tight mb-4 uppercase text-white">The <span class="text-transparent bg-clip-text bg-gradient-to-r from-omni-red to-omni-purple">Core</span> Directives</h2>
+                <p class="text-gray-300 text-lg font-medium text-readable-shadow">Origin data and architectural philosophy of the Omni-Science corporation.</p>
+            </div>
+
+            <div class="glass-panel p-8 md:p-12 rounded-2xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-omni-blue/10 blur-[100px] rounded-full pointer-events-none"></div>
+                <div class="absolute bottom-0 left-0 w-64 h-64 bg-omni-red/10 blur-[100px] rounded-full pointer-events-none"></div>
+                
+                <div class="relative z-10 space-y-8 text-gray-200 font-medium leading-relaxed text-lg">
+                    <p>
+                        <strong class="text-white font-bold uppercase tracking-wider border-b border-omni-blue/50 pb-1">Directive 01: Observation.</strong> <br><br>Founded in 2026, Omni-Science began as a theoretical framework for managing unmanageable data sets. We realized that information is only as powerful as the lens through which it is viewed.
+                    </p>
+                    <p>
+                        <strong class="text-white font-bold uppercase tracking-wider border-b border-omni-purple/50 pb-1">Directive 02: Synthesis.</strong> <br><br>We built the Nexus engine to synthesize this data. We don't just store information; our neural networks digest it, understand context, and generate deterministic outcomes for our enterprise partners.
+                    </p>
+                    <p>
+                        <strong class="text-white font-bold uppercase tracking-wider border-b border-omni-red/50 pb-1">Directive 03: Evolution.</strong> <br><br>We are not a software company. We are architects of digital evolution, ensuring our clients survive and thrive in an increasingly chaotic technological landscape.
+                    </p>
+                </div>
+
+                <div class="mt-12 grid grid-cols-2 md:grid-cols-4 gap-6 border-t border-white/10 pt-12 relative z-10 text-center md:text-left">
+                    <div>
+                        <div class="text-3xl font-black text-white">2026</div>
+                        <div class="text-xs text-omni-blue uppercase tracking-widest mt-1 font-bold">Founding Year</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-black text-white">99.9%</div>
+                        <div class="text-xs text-omni-purple uppercase tracking-widest mt-1 font-bold">Uptime SLA</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-black text-white">$4.2B</div>
+                        <div class="text-xs text-omni-red uppercase tracking-widest mt-1 font-bold">Assets Secured</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-black text-white">0</div>
+                        <div class="text-xs text-omni-blue uppercase tracking-widest mt-1 font-bold">Breaches</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PAGE: CONTACT (TERMINAL) ================= -->
+        <div id="page-contact" class="page-section max-w-4xl mx-auto px-6">
+            <div class="mb-12 md:mt-12 text-center">
+                <h2 class="text-4xl md:text-6xl font-black tracking-tight mb-4 uppercase text-white">Access <span class="text-transparent bg-clip-text bg-gradient-to-r from-omni-blue to-omni-red">Terminal</span></h2>
+                <p class="text-gray-300 text-lg font-medium text-readable-shadow">Establish a secure handshake with the Omni-Science architecture team.</p>
+            </div>
+
+            <form class="glass-panel p-8 md:p-12 rounded-2xl relative overflow-hidden" onsubmit="event.preventDefault();">
+                <div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-omni-blue via-omni-purple to-omni-red"></div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-300 uppercase tracking-widest mb-2">Operator Identity</label>
+                        <input type="text" placeholder="John Doe" class="w-full bg-black/60 border border-white/10 rounded px-4 py-3 text-white focus:outline-none focus:border-omni-blue transition-colors font-mono text-sm placeholder-gray-500 shadow-inner">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-300 uppercase tracking-widest mb-2">Comms Frequency (Email)</label>
+                        <input type="email" placeholder="operator@domain.com" class="w-full bg-black/60 border border-white/10 rounded px-4 py-3 text-white focus:outline-none focus:border-omni-blue transition-colors font-mono text-sm placeholder-gray-500 shadow-inner">
+                    </div>
+                </div>
+                
+                <div class="mb-8">
+                    <label class="block text-xs font-bold text-gray-300 uppercase tracking-widest mb-2">Data Packet (Message)</label>
+                    <textarea rows="5" placeholder="Enter transmission details..." class="w-full bg-black/60 border border-white/10 rounded px-4 py-3 text-white focus:outline-none focus:border-omni-blue transition-colors font-mono text-sm placeholder-gray-500 resize-none shadow-inner"></textarea>
+                </div>
+
+                <button class="w-full py-4 bg-white/10 border border-white/20 text-white font-bold uppercase tracking-widest hover:bg-gradient-to-r hover:from-omni-blue hover:to-omni-red hover:border-transparent transition-all duration-300 flex justify-center items-center gap-2 rounded shadow-lg">
+                    <i data-lucide="send" class="w-4 h-4"></i> Transmit Data
+                </button>
+            </form>
+        </div>
+
+    </main>
+
+    <script>
+        // --- 1. UI & Navigation Logic ---
+        
+        lucide.createIcons();
+
+        // Menu Elements
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mainContent = document.getElementById('main-content');
+        const iconContainer = document.getElementById('icon-container');
+        
+        let isMenuOpen = false;
+
+        mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+
+        function toggleMobileMenu() {
+            isMenuOpen = !isMenuOpen;
+            
+            if (isMenuOpen) {
+                mobileMenu.classList.remove('-translate-x-full');
+                mobileMenu.classList.add('translate-x-0');
+                mainContent.classList.add('opacity-0', 'pointer-events-none');
+                
+                iconContainer.style.transform = 'rotate(180deg)';
+                setTimeout(() => {
+                    iconContainer.innerHTML = '<i data-lucide="x" class="w-7 h-7 text-white"></i>';
+                    lucide.createIcons();
+                }, 150);
+            } else {
+                mobileMenu.classList.remove('translate-x-0');
+                mobileMenu.classList.add('-translate-x-full');
+                mainContent.classList.remove('opacity-0', 'pointer-events-none');
+
+                iconContainer.style.transform = 'rotate(0deg)';
+                setTimeout(() => {
+                    iconContainer.innerHTML = '<i data-lucide="menu" class="w-7 h-7 text-white"></i>';
+                    lucide.createIcons();
+                }, 150);
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 768 && isMenuOpen) { 
+                toggleMobileMenu();
+                mainContent.classList.remove('opacity-0', 'pointer-events-none');
+            }
+        });
+
+        function navigateTo(pageId) {
+            const pages = document.querySelectorAll('.page-section');
+            pages.forEach(page => page.classList.remove('active'));
+
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => link.classList.remove('active-link'));
+
+            const targetPage = document.getElementById('page-' + pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            const activeNav = document.getElementById('nav-' + pageId);
+            if(activeNav) activeNav.classList.add('active-link');
+        }
+
+        // --- 2. REFINED SUBTLE NETWORK ANIMATION ---
+        
+        const canvas = document.getElementById('network-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width, height;
+        let particles = [];
+        // Slightly fewer particles to reduce visual clutter
+        const particleCount = window.innerWidth < 768 ? 40 : 90; 
+        
+        // Colors are now mostly transparent whites/grays, with only rare pops of brand colors
+        const colors = [
+            'rgba(255, 255, 255, 0.4)', 
+            'rgba(255, 255, 255, 0.2)', 
+            'rgba(255, 255, 255, 0.1)', 
+            'rgba(0, 94, 184, 0.6)', // Faint blue
+            'rgba(200, 16, 46, 0.6)'  // Faint red
+        ];
+
+        let mouse = { x: null, y: null, radius: 150 };
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.x;
+            mouse.y = e.y;
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            if(e.touches.length > 0) {
+                mouse.x = e.touches[0].clientX;
+                mouse.y = e.touches[0].clientY;
+            }
+        });
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.5; // Slower, calmer movement
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.baseRadius = Math.random() * 1.5 + 0.5; // Smaller dots
+                this.radius = this.baseRadius;
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+            }
+
+            update() {
+                if (this.x > width || this.x < 0) this.vx = -this.vx;
+                if (this.y > height || this.y < 0) this.vy = -this.vy;
+
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (mouse.x != null && mouse.y != null) {
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < mouse.radius) {
+                        if (this.radius < this.baseRadius * 1.5) {
+                            this.radius += 0.05;
+                        }
+                    } else if (this.radius > this.baseRadius) {
+                        this.radius -= 0.05;
+                    }
+                }
+                this.draw();
+            }
+        }
+
+        function initCanvas() {
+            resize();
+            particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateCanvas() {
+            requestAnimationFrame(animateCanvas);
+            ctx.clearRect(0, 0, width, height);
+
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                
+                for (let j = i; j < particles.length; j++) {
+                    let dx = particles[i].x - particles[j].x;
+                    let dy = particles[i].y - particles[j].y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // Lines are now much more transparent (max 15% opacity instead of 100%)
+                    if (distance < 150) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${(1 - distance/150) * 0.15})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                        ctx.closePath();
+                    }
+                }
+            }
+        }
+
+        window.addEventListener('resize', initCanvas);
+        initCanvas();
+        animateCanvas();
+
+    </script>
+</body>
+</html>
