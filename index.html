@@ -85,15 +85,15 @@
             pointer-events: none;
         }
 
-        /* Page Transition Logic */
+        /* Page Transition Logic - Stripped down to prevent layout conflicts */
         .page-section {
             display: none;
             opacity: 0;
             transform: translateY(20px);
             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            padding-top: 130px; /* Provides the perfect gap below the navbar */
+            padding-bottom: 80px;
             min-height: 100vh;
-            padding-top: 140px; 
-            padding-bottom: 50px;
         }
 
         .page-section.active {
@@ -125,7 +125,7 @@
             -webkit-backdrop-filter: blur(24px);
         }
 
-        /* Custom Scrollbar specifically for the deeply nested sidebar */
+        /* Custom Scrollbar for Sidebar */
         .sidebar-scroll::-webkit-scrollbar { width: 4px; }
         .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
         .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
@@ -146,7 +146,6 @@
             text-shadow: 0px 2px 8px rgba(0,0,0,0.9);
         }
 
-        /* Accordion Animation utility */
         .chevron-icon {
             transition: transform 0.3s ease;
         }
@@ -176,8 +175,6 @@
             <button onclick="navigateTo('home')" class="focus:outline-none z-50 group">
                 <div class="bg-white px-3 py-2 rounded shadow-[0_0_15px_rgba(0,94,184,0.3)] border border-white/20 h-14 flex items-center group-hover:shadow-[0_0_20px_rgba(200,16,46,0.4)] transition-all duration-300">
                     <img src="Omni-Science Banner.jpg" alt="Omni-Science Logo" class="h-full w-auto object-contain" onerror="this.style.display='none'; document.getElementById('fallback-logo').style.display='flex';">
-                    
-                    <!-- Fallback if image is missing -->
                     <div id="fallback-logo" class="hidden items-center gap-2">
                         <i data-lucide="aperture" class="text-omni-blue w-8 h-8"></i>
                         <span class="text-2xl font-black tracking-widest text-black">OMNI<span class="text-omni-red">-SCIENCE</span></span>
@@ -185,15 +182,12 @@
                 </div>
             </button>
             
-            <!-- Universal Menu Toggle & Actions (Visible on BOTH PC and Mobile) -->
+            <!-- Universal Menu Toggle & Actions -->
             <div class="flex items-center gap-4 md:gap-8 z-50">
-                
-                <!-- Initialize Button -->
                 <button onclick="navigateTo('contact')" class="hidden md:block px-8 py-3 rounded bg-gradient-to-r from-omni-blue to-omni-red text-white hover:from-omni-red hover:to-omni-blue transition-all shadow-[0_0_15px_rgba(0,94,184,0.4)] font-black tracking-widest uppercase text-sm">
                     Initialize Workspace
                 </button>
 
-                <!-- Universal Hamburger Button -->
                 <button id="mobile-menu-btn" class="relative text-white focus:outline-none p-2 h-14 w-14 flex items-center justify-center overflow-hidden group border border-white/10 hover:border-white/30 transition-all duration-300 bg-black/40 rounded shadow-lg">
                     <span class="absolute left-0 top-0 w-[3px] h-full bg-omni-blue transform -translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></span>
                     <span class="absolute right-0 bottom-0 w-[3px] h-full bg-omni-red transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></span>
@@ -206,13 +200,11 @@
     </nav>
 
     <!-- ================= COMMAND DRAWER (SIDEBAR) ================= -->
-    <!-- Fixed left, full height, custom width for PC vs Mobile -->
     <div id="mobile-menu" class="fixed top-0 left-0 h-screen w-[85vw] md:w-96 drawer-blur border-r border-white/10 flex flex-col pt-32 pb-6 transform -translate-x-full transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] z-40 shadow-[20px_0_50px_rgba(0,0,0,0.8)]">
         
-        <!-- Scrollable Content Area for 40+ Tools -->
+        <!-- Scrollable Content Area -->
         <div class="flex-1 overflow-y-auto px-8 sidebar-scroll flex flex-col gap-2">
             
-            <!-- Main Core Pages -->
             <div class="mb-6 border-b border-white/10 pb-6 space-y-4">
                 <button onclick="navigateTo('home'); toggleMobileMenu();" class="w-full text-left text-xl text-white hover:text-omni-blue transition-all uppercase tracking-widest font-black flex items-center gap-3 group">
                     <i data-lucide="home" class="w-5 h-5 text-gray-400 group-hover:text-omni-blue transition-colors"></i> Nexus Home
@@ -228,26 +220,20 @@
                 </button>
             </div>
 
-            <!-- Header for Tools Section -->
             <h4 class="text-xs text-omni-red font-bold uppercase tracking-[0.2em] mb-4">Systems & Tooling</h4>
 
-            <!-- ================= NESTED ACCORDION SYSTEM ================= -->
-            
-            <!-- ACCORDION 1: Data Analytics -->
+            <!-- Accordions -->
             <div class="accordion-item mb-2">
                 <button class="accordion-btn w-full text-left text-lg text-gray-200 hover:text-white transition-all tracking-wider font-bold flex items-center justify-between py-2 group">
                     <span class="flex items-center gap-3"><i data-lucide="bar-chart-2" class="w-4 h-4 text-omni-blue"></i> Data Analytics</span>
                     <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon text-gray-500 group-hover:text-omni-blue"></i>
                 </button>
-                <!-- Level 2 Sub-menu -->
                 <div class="accordion-content hidden flex-col pl-7 border-l border-white/10 ml-2 mt-2 space-y-2">
                     
-                    <!-- Nested Accordion: Predictive Models -->
                     <div class="accordion-item">
                         <button class="accordion-btn w-full text-left text-sm text-gray-400 hover:text-omni-blue transition-all tracking-wider font-medium flex items-center justify-between py-2">
                             Predictive Models <i data-lucide="chevron-down" class="w-3 h-3 chevron-icon"></i>
                         </button>
-                        <!-- Level 3 Tools -->
                         <div class="accordion-content hidden flex-col pl-4 border-l border-white/5 ml-1 mt-1 space-y-3 pt-2 pb-3">
                             <a href="#" class="text-xs text-gray-500 hover:text-white transition-colors block flex items-center gap-2"><div class="w-1 h-1 bg-omni-red rounded-full"></div> Market Forecaster</a>
                             <a href="#" class="text-xs text-gray-500 hover:text-white transition-colors block flex items-center gap-2"><div class="w-1 h-1 bg-omni-red rounded-full"></div> Anomaly Detector</a>
@@ -255,19 +241,16 @@
                         </div>
                     </div>
 
-                    <!-- Direct Tool Link (No sub-menu) -->
                     <a href="#" class="text-sm text-gray-400 hover:text-omni-blue transition-all tracking-wider font-medium py-2 block">Quantum Sorter</a>
                     <a href="#" class="text-sm text-gray-400 hover:text-omni-blue transition-all tracking-wider font-medium py-2 block">Node Mapper</a>
                 </div>
             </div>
 
-            <!-- ACCORDION 2: Security Operations -->
             <div class="accordion-item mb-2">
                 <button class="accordion-btn w-full text-left text-lg text-gray-200 hover:text-white transition-all tracking-wider font-bold flex items-center justify-between py-2 group">
                     <span class="flex items-center gap-3"><i data-lucide="shield" class="w-4 h-4 text-omni-red"></i> Security Ops</span>
                     <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon text-gray-500 group-hover:text-omni-red"></i>
                 </button>
-                <!-- Level 2 Sub-menu -->
                 <div class="accordion-content hidden flex-col pl-7 border-l border-white/10 ml-2 mt-2 space-y-2 pb-2">
                     <a href="#" class="text-sm text-gray-400 hover:text-omni-red transition-all tracking-wider font-medium py-2 block">Aegis Dashboard</a>
                     <a href="#" class="text-sm text-gray-400 hover:text-omni-red transition-all tracking-wider font-medium py-2 block">Threat Matrix</a>
@@ -275,21 +258,17 @@
                 </div>
             </div>
 
-            <!-- ACCORDION 3: Infrastructure / API -->
             <div class="accordion-item mb-2">
                 <button class="accordion-btn w-full text-left text-lg text-gray-200 hover:text-white transition-all tracking-wider font-bold flex items-center justify-between py-2 group">
                     <span class="flex items-center gap-3"><i data-lucide="network" class="w-4 h-4 text-omni-purple"></i> Infrastructure</span>
                     <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon text-gray-500 group-hover:text-omni-purple"></i>
                 </button>
-                <!-- Level 2 Sub-menu -->
                 <div class="accordion-content hidden flex-col pl-7 border-l border-white/10 ml-2 mt-2 space-y-2 pb-2">
                     <a href="#" class="text-sm text-gray-400 hover:text-omni-purple transition-all tracking-wider font-medium py-2 block">REST Bridges</a>
                     <a href="#" class="text-sm text-gray-400 hover:text-omni-purple transition-all tracking-wider font-medium py-2 block">GraphQL Hub</a>
                     <a href="#" class="text-sm text-gray-400 hover:text-omni-purple transition-all tracking-wider font-medium py-2 block">Satellite Uplink</a>
                 </div>
             </div>
-            
-            <!-- You can easily copy and paste the Accordion Item blocks above to add the rest of your 40 tools! -->
             
         </div>
 
@@ -302,172 +281,177 @@
     </div>
 
     <!-- ================= MAIN CONTENT ================= -->
-    <!-- Opacity fades when sidebar opens -->
     <main id="main-content" class="relative z-10 transition-opacity duration-500 ease-in-out">
 
         <!-- PAGE: HOME -->
-        <div id="page-home" class="page-section active max-w-7xl mx-auto px-6 flex flex-col justify-center items-center text-center min-h-[90vh]">
-            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/20 bg-black/40 text-white text-xs font-bold uppercase tracking-[0.2em] mb-8 shadow-lg backdrop-blur-sm">
-                <span class="w-2 h-2 rounded-full bg-omni-red animate-pulse"></span>
-                Omni-Science Protocol v.9.0
-            </div>
-            
-            <h1 class="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter mb-4 leading-[1.1] text-white">
-                DATA SYNERGY.<br>
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-gray-400">ENTERPRISE SCALE.</span>
-            </h1>
+        <!-- FIX: Notice the flexbox alignment logic has been moved INSIDE the clean page-section wrapper! -->
+        <div id="page-home" class="page-section active">
+            <div class="max-w-7xl mx-auto px-6 flex flex-col justify-center items-center text-center min-h-[75vh]">
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/20 bg-black/40 text-white text-xs font-bold uppercase tracking-[0.2em] mb-8 shadow-lg backdrop-blur-sm">
+                    <span class="w-2 h-2 rounded-full bg-omni-red animate-pulse"></span>
+                    Omni-Science Protocol v.9.0
+                </div>
+                
+                <h1 class="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter mb-4 leading-[1.1] text-white">
+                    DATA SYNERGY.<br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-gray-400">ENTERPRISE SCALE.</span>
+                </h1>
 
-            <div class="h-1.5 w-32 bg-gradient-to-r from-omni-blue via-omni-purple to-omni-red rounded-full mb-8 mx-auto shadow-[0_0_15px_rgba(0,94,184,0.5)]"></div>
-            
-            <p class="text-lg md:text-xl text-gray-200 mb-12 max-w-3xl mx-auto font-medium tracking-wide text-readable-shadow">
-                We synthesize petabytes of atmospheric, financial, and synthetic data into a single pane of glass. The ultimate cognitive engine for your enterprise.
-            </p>
-            
-            <div class="flex flex-col sm:flex-row gap-6 justify-center items-center w-full">
-                <!-- Open Sidebar Drawer instead of scrolling down -->
-                <button onclick="toggleMobileMenu()" class="group relative px-8 py-4 bg-white text-black font-bold uppercase tracking-wider overflow-hidden rounded shadow-xl">
-                    <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-omni-blue to-omni-red transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></div>
-                    <span class="relative z-10 flex items-center gap-2 group-hover:text-white transition-colors">
-                        Access Tooling <i data-lucide="layers" class="w-4 h-4"></i>
-                    </span>
-                </button>
+                <div class="h-1.5 w-32 bg-gradient-to-r from-omni-blue via-omni-purple to-omni-red rounded-full mb-8 mx-auto shadow-[0_0_15px_rgba(0,94,184,0.5)]"></div>
+                
+                <p class="text-lg md:text-xl text-gray-200 mb-12 max-w-3xl mx-auto font-medium tracking-wide text-readable-shadow">
+                    We synthesize petabytes of atmospheric, financial, and synthetic data into a single pane of glass. The ultimate cognitive engine for your enterprise.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-6 justify-center items-center w-full">
+                    <button onclick="toggleMobileMenu()" class="group relative px-8 py-4 bg-white text-black font-bold uppercase tracking-wider overflow-hidden rounded shadow-xl">
+                        <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-omni-blue to-omni-red transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></div>
+                        <span class="relative z-10 flex items-center gap-2 group-hover:text-white transition-colors">
+                            Access Tooling <i data-lucide="layers" class="w-4 h-4"></i>
+                        </span>
+                    </button>
+                </div>
             </div>
         </div>
 
         <!-- PAGE: SOLUTIONS -->
-        <div id="page-solutions" class="page-section max-w-7xl mx-auto px-6">
-            <div class="mb-16 md:mt-12 text-center md:text-left">
-                <h2 class="text-4xl md:text-6xl font-black tracking-tight mb-4 uppercase text-white">Ecosystem <span class="text-transparent bg-clip-text bg-gradient-to-r from-omni-blue to-omni-red">Modules</span></h2>
-                <p class="text-gray-300 text-lg max-w-2xl font-medium text-readable-shadow">Deployable sub-routines engineered to overwrite industry bottlenecks. Select a module to review its telemetry.</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div class="glass-panel p-8 rounded-xl glow-hover group cursor-pointer">
-                    <div class="w-14 h-14 rounded-lg bg-omni-blue/20 border border-omni-blue/50 flex items-center justify-center mb-8 text-omni-blue group-hover:scale-110 transition-transform">
-                        <i data-lucide="brain-circuit" class="w-7 h-7"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold mb-3 tracking-wide text-white">Cognitive Core</h3>
-                    <p class="text-gray-300 text-sm leading-relaxed mb-6 font-medium">
-                        This module utilizes deep learning architectures to predict market fluctuations before they occur.
-                    </p>
-                    <div class="h-1 w-full bg-white/10 rounded overflow-hidden">
-                        <div class="h-full bg-omni-blue w-3/4"></div>
-                    </div>
-                    <div class="mt-2 text-xs text-omni-blue text-right uppercase tracking-widest font-bold">75% Optimized</div>
+        <div id="page-solutions" class="page-section">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="mb-12 text-center md:text-left">
+                    <h2 class="text-4xl md:text-6xl font-black tracking-tight mb-4 uppercase text-white">Ecosystem <span class="text-transparent bg-clip-text bg-gradient-to-r from-omni-blue to-omni-red">Modules</span></h2>
+                    <p class="text-gray-300 text-lg max-w-2xl font-medium text-readable-shadow">Deployable sub-routines engineered to overwrite industry bottlenecks. Select a module to review its telemetry.</p>
                 </div>
 
-                <div class="glass-panel p-8 rounded-xl glow-hover group cursor-pointer">
-                    <div class="w-14 h-14 rounded-lg bg-omni-red/20 border border-omni-red/50 flex items-center justify-center mb-8 text-omni-red group-hover:scale-110 transition-transform">
-                        <i data-lucide="shield-alert" class="w-7 h-7"></i>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="glass-panel p-8 rounded-xl glow-hover group cursor-pointer">
+                        <div class="w-14 h-14 rounded-lg bg-omni-blue/20 border border-omni-blue/50 flex items-center justify-center mb-8 text-omni-blue group-hover:scale-110 transition-transform">
+                            <i data-lucide="brain-circuit" class="w-7 h-7"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3 tracking-wide text-white">Cognitive Core</h3>
+                        <p class="text-gray-300 text-sm leading-relaxed mb-6 font-medium">
+                            This module utilizes deep learning architectures to predict market fluctuations before they occur.
+                        </p>
+                        <div class="h-1 w-full bg-white/10 rounded overflow-hidden">
+                            <div class="h-full bg-omni-blue w-3/4"></div>
+                        </div>
+                        <div class="mt-2 text-xs text-omni-blue text-right uppercase tracking-widest font-bold">75% Optimized</div>
                     </div>
-                    <h3 class="text-2xl font-bold mb-3 tracking-wide text-white">Aegis Firewall</h3>
-                    <p class="text-gray-300 text-sm leading-relaxed mb-6 font-medium">
-                        Quantum-resistant cryptography that actively hunts and neutralizes internal and external network anomalies.
-                    </p>
-                    <div class="h-1 w-full bg-white/10 rounded overflow-hidden">
-                        <div class="h-full bg-omni-red w-full"></div>
-                    </div>
-                    <div class="mt-2 text-xs text-omni-red text-right uppercase tracking-widest font-bold">System Secure</div>
-                </div>
 
-                <div class="glass-panel p-8 rounded-xl glow-hover group cursor-pointer">
-                    <div class="w-14 h-14 rounded-lg bg-omni-purple/20 border border-omni-purple/50 flex items-center justify-center mb-8 text-omni-purple group-hover:scale-110 transition-transform">
-                        <i data-lucide="satellite" class="w-7 h-7"></i>
+                    <div class="glass-panel p-8 rounded-xl glow-hover group cursor-pointer">
+                        <div class="w-14 h-14 rounded-lg bg-omni-red/20 border border-omni-red/50 flex items-center justify-center mb-8 text-omni-red group-hover:scale-110 transition-transform">
+                            <i data-lucide="shield-alert" class="w-7 h-7"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3 tracking-wide text-white">Aegis Firewall</h3>
+                        <p class="text-gray-300 text-sm leading-relaxed mb-6 font-medium">
+                            Quantum-resistant cryptography that actively hunts and neutralizes internal and external network anomalies.
+                        </p>
+                        <div class="h-1 w-full bg-white/10 rounded overflow-hidden">
+                            <div class="h-full bg-omni-red w-full"></div>
+                        </div>
+                        <div class="mt-2 text-xs text-omni-red text-right uppercase tracking-widest font-bold">System Secure</div>
                     </div>
-                    <h3 class="text-2xl font-bold mb-3 tracking-wide text-white">Orbital Sync</h3>
-                    <p class="text-gray-300 text-sm leading-relaxed mb-6 font-medium">
-                        Zero-latency global synchronization utilizing low-earth orbit satellite arrays for persistent connection.
-                    </p>
-                    <div class="h-1 w-full bg-white/10 rounded overflow-hidden">
-                        <div class="h-full bg-omni-purple w-1/2"></div>
+
+                    <div class="glass-panel p-8 rounded-xl glow-hover group cursor-pointer">
+                        <div class="w-14 h-14 rounded-lg bg-omni-purple/20 border border-omni-purple/50 flex items-center justify-center mb-8 text-omni-purple group-hover:scale-110 transition-transform">
+                            <i data-lucide="satellite" class="w-7 h-7"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3 tracking-wide text-white">Orbital Sync</h3>
+                        <p class="text-gray-300 text-sm leading-relaxed mb-6 font-medium">
+                            Zero-latency global synchronization utilizing low-earth orbit satellite arrays for persistent connection.
+                        </p>
+                        <div class="h-1 w-full bg-white/10 rounded overflow-hidden">
+                            <div class="h-full bg-omni-purple w-1/2"></div>
+                        </div>
+                        <div class="mt-2 text-xs text-omni-purple text-right uppercase tracking-widest font-bold">Connecting...</div>
                     </div>
-                    <div class="mt-2 text-xs text-omni-purple text-right uppercase tracking-widest font-bold">Connecting...</div>
                 </div>
             </div>
         </div>
 
         <!-- PAGE: ABOUT (CORE) -->
-        <div id="page-about" class="page-section max-w-5xl mx-auto px-6">
-             <div class="mb-16 md:mt-12 text-center">
-                <h2 class="text-4xl md:text-6xl font-black tracking-tight mb-4 uppercase text-white">The <span class="text-transparent bg-clip-text bg-gradient-to-r from-omni-red to-omni-purple">Core</span> Directives</h2>
-                <p class="text-gray-300 text-lg font-medium text-readable-shadow">Origin data and architectural philosophy of the Omni-Science corporation.</p>
-            </div>
-
-            <div class="glass-panel p-8 md:p-12 rounded-2xl relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-64 h-64 bg-omni-blue/10 blur-[100px] rounded-full pointer-events-none"></div>
-                <div class="absolute bottom-0 left-0 w-64 h-64 bg-omni-red/10 blur-[100px] rounded-full pointer-events-none"></div>
-                
-                <div class="relative z-10 space-y-8 text-gray-200 font-medium leading-relaxed text-lg">
-                    <p>
-                        <strong class="text-white font-bold uppercase tracking-wider border-b border-omni-blue/50 pb-1">Directive 01: Observation.</strong> <br><br>Founded in 2026, Omni-Science began as a theoretical framework for managing unmanageable data sets. We realized that information is only as powerful as the lens through which it is viewed.
-                    </p>
-                    <p>
-                        <strong class="text-white font-bold uppercase tracking-wider border-b border-omni-purple/50 pb-1">Directive 02: Synthesis.</strong> <br><br>We built the Nexus engine to synthesize this data. We don't just store information; our neural networks digest it, understand context, and generate deterministic outcomes for our enterprise partners.
-                    </p>
-                    <p>
-                        <strong class="text-white font-bold uppercase tracking-wider border-b border-omni-red/50 pb-1">Directive 03: Evolution.</strong> <br><br>We are not a software company. We are architects of digital evolution, ensuring our clients survive and thrive in an increasingly chaotic technological landscape.
-                    </p>
+        <div id="page-about" class="page-section">
+             <div class="max-w-5xl mx-auto px-6">
+                 <div class="mb-12 text-center">
+                    <h2 class="text-4xl md:text-6xl font-black tracking-tight mb-4 uppercase text-white">The <span class="text-transparent bg-clip-text bg-gradient-to-r from-omni-red to-omni-purple">Core</span> Directives</h2>
+                    <p class="text-gray-300 text-lg font-medium text-readable-shadow">Origin data and architectural philosophy of the Omni-Science corporation.</p>
                 </div>
 
-                <div class="mt-12 grid grid-cols-2 md:grid-cols-4 gap-6 border-t border-white/10 pt-12 relative z-10 text-center md:text-left">
-                    <div>
-                        <div class="text-3xl font-black text-white">2026</div>
-                        <div class="text-xs text-omni-blue uppercase tracking-widest mt-1 font-bold">Founding Year</div>
+                <div class="glass-panel p-8 md:p-12 rounded-2xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-omni-blue/10 blur-[100px] rounded-full pointer-events-none"></div>
+                    <div class="absolute bottom-0 left-0 w-64 h-64 bg-omni-red/10 blur-[100px] rounded-full pointer-events-none"></div>
+                    
+                    <div class="relative z-10 space-y-8 text-gray-200 font-medium leading-relaxed text-lg">
+                        <p>
+                            <strong class="text-white font-bold uppercase tracking-wider border-b border-omni-blue/50 pb-1">Directive 01: Observation.</strong> <br><br>Founded in 2026, Omni-Science began as a theoretical framework for managing unmanageable data sets. We realized that information is only as powerful as the lens through which it is viewed.
+                        </p>
+                        <p>
+                            <strong class="text-white font-bold uppercase tracking-wider border-b border-omni-purple/50 pb-1">Directive 02: Synthesis.</strong> <br><br>We built the Nexus engine to synthesize this data. We don't just store information; our neural networks digest it, understand context, and generate deterministic outcomes for our enterprise partners.
+                        </p>
+                        <p>
+                            <strong class="text-white font-bold uppercase tracking-wider border-b border-omni-red/50 pb-1">Directive 03: Evolution.</strong> <br><br>We are not a software company. We are architects of digital evolution, ensuring our clients survive and thrive in an increasingly chaotic technological landscape.
+                        </p>
                     </div>
-                    <div>
-                        <div class="text-3xl font-black text-white">99.9%</div>
-                        <div class="text-xs text-omni-purple uppercase tracking-widest mt-1 font-bold">Uptime SLA</div>
-                    </div>
-                    <div>
-                        <div class="text-3xl font-black text-white">$4.2B</div>
-                        <div class="text-xs text-omni-red uppercase tracking-widest mt-1 font-bold">Assets Secured</div>
-                    </div>
-                    <div>
-                        <div class="text-3xl font-black text-white">0</div>
-                        <div class="text-xs text-omni-blue uppercase tracking-widest mt-1 font-bold">Breaches</div>
+
+                    <div class="mt-12 grid grid-cols-2 md:grid-cols-4 gap-6 border-t border-white/10 pt-12 relative z-10 text-center md:text-left">
+                        <div>
+                            <div class="text-3xl font-black text-white">2026</div>
+                            <div class="text-xs text-omni-blue uppercase tracking-widest mt-1 font-bold">Founding Year</div>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-black text-white">99.9%</div>
+                            <div class="text-xs text-omni-purple uppercase tracking-widest mt-1 font-bold">Uptime SLA</div>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-black text-white">$4.2B</div>
+                            <div class="text-xs text-omni-red uppercase tracking-widest mt-1 font-bold">Assets Secured</div>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-black text-white">0</div>
+                            <div class="text-xs text-omni-blue uppercase tracking-widest mt-1 font-bold">Breaches</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- PAGE: CONTACT (TERMINAL) -->
-        <div id="page-contact" class="page-section max-w-4xl mx-auto px-6">
-            <div class="mb-12 md:mt-12 text-center">
-                <h2 class="text-4xl md:text-6xl font-black tracking-tight mb-4 uppercase text-white">Access <span class="text-transparent bg-clip-text bg-gradient-to-r from-omni-blue to-omni-red">Terminal</span></h2>
-                <p class="text-gray-300 text-lg font-medium text-readable-shadow">Establish a secure handshake with the Omni-Science architecture team.</p>
+        <div id="page-contact" class="page-section">
+            <div class="max-w-4xl mx-auto px-6">
+                <div class="mb-12 text-center">
+                    <h2 class="text-4xl md:text-6xl font-black tracking-tight mb-4 uppercase text-white">Access <span class="text-transparent bg-clip-text bg-gradient-to-r from-omni-blue to-omni-red">Terminal</span></h2>
+                    <p class="text-gray-300 text-lg font-medium text-readable-shadow">Establish a secure handshake with the Omni-Science architecture team.</p>
+                </div>
+
+                <form class="glass-panel p-8 md:p-12 rounded-2xl relative overflow-hidden" onsubmit="event.preventDefault();">
+                    <div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-omni-blue via-omni-purple to-omni-red"></div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-300 uppercase tracking-widest mb-2">Operator Identity</label>
+                            <input type="text" placeholder="John Doe" class="w-full bg-black/60 border border-white/10 rounded px-4 py-3 text-white focus:outline-none focus:border-omni-blue transition-colors font-mono text-sm placeholder-gray-500 shadow-inner">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-300 uppercase tracking-widest mb-2">Comms Frequency (Email)</label>
+                            <input type="email" placeholder="operator@domain.com" class="w-full bg-black/60 border border-white/10 rounded px-4 py-3 text-white focus:outline-none focus:border-omni-blue transition-colors font-mono text-sm placeholder-gray-500 shadow-inner">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-8">
+                        <label class="block text-xs font-bold text-gray-300 uppercase tracking-widest mb-2">Data Packet (Message)</label>
+                        <textarea rows="5" placeholder="Enter transmission details..." class="w-full bg-black/60 border border-white/10 rounded px-4 py-3 text-white focus:outline-none focus:border-omni-blue transition-colors font-mono text-sm placeholder-gray-500 resize-none shadow-inner"></textarea>
+                    </div>
+
+                    <button class="w-full py-4 bg-white/10 border border-white/20 text-white font-bold uppercase tracking-widest hover:bg-gradient-to-r hover:from-omni-blue hover:to-omni-red hover:border-transparent transition-all duration-300 flex justify-center items-center gap-2 rounded shadow-lg">
+                        <i data-lucide="send" class="w-4 h-4"></i> Transmit Data
+                    </button>
+                </form>
             </div>
-
-            <form class="glass-panel p-8 md:p-12 rounded-2xl relative overflow-hidden" onsubmit="event.preventDefault();">
-                <div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-omni-blue via-omni-purple to-omni-red"></div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-300 uppercase tracking-widest mb-2">Operator Identity</label>
-                        <input type="text" placeholder="John Doe" class="w-full bg-black/60 border border-white/10 rounded px-4 py-3 text-white focus:outline-none focus:border-omni-blue transition-colors font-mono text-sm placeholder-gray-500 shadow-inner">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-300 uppercase tracking-widest mb-2">Comms Frequency (Email)</label>
-                        <input type="email" placeholder="operator@domain.com" class="w-full bg-black/60 border border-white/10 rounded px-4 py-3 text-white focus:outline-none focus:border-omni-blue transition-colors font-mono text-sm placeholder-gray-500 shadow-inner">
-                    </div>
-                </div>
-                
-                <div class="mb-8">
-                    <label class="block text-xs font-bold text-gray-300 uppercase tracking-widest mb-2">Data Packet (Message)</label>
-                    <textarea rows="5" placeholder="Enter transmission details..." class="w-full bg-black/60 border border-white/10 rounded px-4 py-3 text-white focus:outline-none focus:border-omni-blue transition-colors font-mono text-sm placeholder-gray-500 resize-none shadow-inner"></textarea>
-                </div>
-
-                <button class="w-full py-4 bg-white/10 border border-white/20 text-white font-bold uppercase tracking-widest hover:bg-gradient-to-r hover:from-omni-blue hover:to-omni-red hover:border-transparent transition-all duration-300 flex justify-center items-center gap-2 rounded shadow-lg">
-                    <i data-lucide="send" class="w-4 h-4"></i> Transmit Data
-                </button>
-            </form>
         </div>
     </main>
 
     <script>
-        // --- 1. UI & Navigation Logic ---
         lucide.createIcons();
 
-        // Universal Drawer Toggle
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
         const mainContent = document.getElementById('main-content');
@@ -503,17 +487,13 @@
             }
         }
 
-        // Accordion Logic (Tabs within Tabs)
         const accordionBtns = document.querySelectorAll('.accordion-btn');
 
         accordionBtns.forEach(btn => {
             btn.addEventListener('click', function() {
-                // Find the content div immediately following the button
                 const content = this.nextElementSibling;
-                // Find the chevron icon inside this specific button
                 const icon = this.querySelector('.chevron-icon');
 
-                // Toggle visibility
                 if (content.classList.contains('hidden')) {
                     content.classList.remove('hidden');
                     content.classList.add('flex');
@@ -526,7 +506,6 @@
             });
         });
 
-        // Page Routing Logic
         function navigateTo(pageId) {
             const pages = document.querySelectorAll('.page-section');
             pages.forEach(page => page.classList.remove('active'));
@@ -538,7 +517,6 @@
             }
         }
 
-        // --- 2. CANVAS NETWORK ANIMATION ---
         const canvas = document.getElementById('network-canvas');
         const ctx = canvas.getContext('2d');
         
