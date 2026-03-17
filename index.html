@@ -23,10 +23,10 @@
                     fontFamily: { sans: ['Space Grotesk', 'sans-serif'] },
                     colors: {
                         omni: {
-                            base: '#030712', // Deep navy/black
-                            blue: '#005eb8', // Sourced from logo
-                            red: '#c8102e',  // Sourced from logo
-                            purple: '#6f2c91' // Sourced from banner gradient transition
+                            base: '#030712', 
+                            blue: '#005eb8', 
+                            red: '#c8102e',  
+                            purple: '#6f2c91' 
                         }
                     },
                     animation: {
@@ -66,7 +66,6 @@
             pointer-events: none;
         }
 
-        /* Dimmed the orbs so they don't wash out the screen */
         #ambient-orbs {
             position: fixed;
             inset: 0;
@@ -76,7 +75,6 @@
             opacity: 0.12; 
         }
 
-        /* 2D HTML5 Canvas */
         #network-canvas {
             position: fixed;
             top: 0;
@@ -94,7 +92,7 @@
             transform: translateY(20px);
             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
             min-height: 100vh;
-            padding-top: 120px;
+            padding-top: 140px; 
             padding-bottom: 50px;
         }
 
@@ -104,7 +102,15 @@
             transform: translateY(0);
         }
 
-        /* Premium Glassmorphism - Made slightly darker to help text contrast */
+        /* Premium Glassmorphism */
+        .nav-glass {
+            background: rgba(3, 7, 18, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.8);
+        }
+
         .glass-panel {
             background: rgba(10, 15, 25, 0.6);
             backdrop-filter: blur(16px);
@@ -114,12 +120,17 @@
         }
 
         .drawer-blur {
-            background: rgba(3, 7, 18, 0.7);
+            background: rgba(3, 7, 18, 0.85);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
         }
 
-        /* Interactive Glow Effects */
+        /* Custom Scrollbar specifically for the deeply nested sidebar */
+        .sidebar-scroll::-webkit-scrollbar { width: 4px; }
+        .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+        .sidebar-scroll::-webkit-scrollbar-thumb:hover { background: #005eb8; }
+
         .glow-hover {
             transition: all 0.4s ease;
             border-bottom: 2px solid transparent;
@@ -131,30 +142,17 @@
             border-bottom: 2px solid #005eb8;
         }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #030712; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #005eb8; }
-        
-        .nav-link.active-link {
-            color: #ffffff;
-            font-weight: 700;
-            position: relative;
-        }
-        .nav-link.active-link::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(to right, #005eb8, #c8102e);
-        }
-
-        /* Helper class to ensure paragraph text is always readable over moving backgrounds */
         .text-readable-shadow {
             text-shadow: 0px 2px 8px rgba(0,0,0,0.9);
+        }
+
+        /* Accordion Animation utility */
+        .chevron-icon {
+            transition: transform 0.3s ease;
+        }
+        .accordion-content {
+            transition: max-height 0.3s ease-out, opacity 0.3s ease;
+            overflow: hidden;
         }
     </style>
 </head>
@@ -170,104 +168,173 @@
 
     <canvas id="network-canvas"></canvas>
 
-    <!-- ================= NAVIGATION ================= -->
-    <nav class="fixed w-full z-50 top-0 transition-all duration-300 glass-panel border-b border-white/10">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center relative">
+    <!-- ================= TOP NAVIGATION BAR ================= -->
+    <nav class="fixed w-full z-50 top-0 transition-all duration-300 nav-glass">
+        <div class="max-w-[120rem] mx-auto px-6 lg:px-8 py-4 flex justify-between items-center relative">
             
-            <!-- Logo -->
-            <button onclick="navigateTo('home')" class="flex items-center group focus:outline-none z-50 h-10">
-                <img src="Omni-Science Banner.jpg" alt="Omni-Science Logo" class="h-full object-contain bg-white/5 rounded px-2 py-1 border border-white/10 group-hover:bg-white/10 transition-colors" onerror="this.style.display='none'; document.getElementById('fallback-logo').style.display='flex';">
+            <!-- Logo Container -->
+            <button onclick="navigateTo('home')" class="focus:outline-none z-50 group">
+                <div class="bg-white px-3 py-2 rounded shadow-[0_0_15px_rgba(0,94,184,0.3)] border border-white/20 h-14 flex items-center group-hover:shadow-[0_0_20px_rgba(200,16,46,0.4)] transition-all duration-300">
+                    <img src="Omni-Science Banner.jpg" alt="Omni-Science Logo" class="h-full w-auto object-contain" onerror="this.style.display='none'; document.getElementById('fallback-logo').style.display='flex';">
+                    
+                    <!-- Fallback if image is missing -->
+                    <div id="fallback-logo" class="hidden items-center gap-2">
+                        <i data-lucide="aperture" class="text-omni-blue w-8 h-8"></i>
+                        <span class="text-2xl font-black tracking-widest text-black">OMNI<span class="text-omni-red">-SCIENCE</span></span>
+                    </div>
+                </div>
+            </button>
+            
+            <!-- Universal Menu Toggle & Actions (Visible on BOTH PC and Mobile) -->
+            <div class="flex items-center gap-4 md:gap-8 z-50">
                 
-                <!-- Fallback Logo (Adjusted for high contrast readability) -->
-                <div id="fallback-logo" class="hidden items-center gap-2">
-                    <i data-lucide="aperture" class="text-omni-blue w-8 h-8"></i>
-                    <span class="text-2xl font-bold tracking-widest text-white">OMNI<span class="text-gray-400">-SCIENCE</span></span>
-                </div>
-            </button>
-            
-            <!-- Desktop Links -->
-            <div class="hidden md:flex gap-10 items-center text-sm font-medium text-gray-400 tracking-wider uppercase">
-                <button onclick="navigateTo('home')" id="nav-home" class="nav-link hover:text-white transition-colors">Nexus</button>
-                <button onclick="navigateTo('solutions')" id="nav-solutions" class="nav-link hover:text-white transition-colors">Modules</button>
-                <button onclick="navigateTo('about')" id="nav-about" class="nav-link hover:text-white transition-colors">Core</button>
-                <button onclick="navigateTo('contact')" id="nav-contact" class="nav-link hover:text-white transition-colors">Terminal</button>
-                <button onclick="navigateTo('contact')" class="px-6 py-2.5 rounded bg-gradient-to-r from-omni-blue to-omni-red text-white hover:from-omni-red hover:to-omni-blue transition-all shadow-[0_0_15px_rgba(0,94,184,0.4)] font-bold">
-                    INITIALIZE
+                <!-- Initialize Button -->
+                <button onclick="navigateTo('contact')" class="hidden md:block px-8 py-3 rounded bg-gradient-to-r from-omni-blue to-omni-red text-white hover:from-omni-red hover:to-omni-blue transition-all shadow-[0_0_15px_rgba(0,94,184,0.4)] font-black tracking-widest uppercase text-sm">
+                    Initialize Workspace
                 </button>
-            </div>
 
-            <!-- Mobile Menu Toggle Button -->
-            <button id="mobile-menu-btn" class="md:hidden relative text-white focus:outline-none p-2 h-12 w-12 flex items-center justify-center overflow-hidden group border border-transparent hover:border-white/10 transition-all duration-300 z-50 bg-black/40 rounded-sm">
-                <span class="absolute left-0 top-0 w-[2px] h-full bg-omni-blue transform -translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></span>
-                <span class="absolute right-0 bottom-0 w-[2px] h-full bg-omni-red transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></span>
-                <div id="icon-container" class="relative z-10 transition-transform duration-500 flex items-center justify-center">
-                    <i data-lucide="menu" class="w-7 h-7"></i>
-                </div>
-            </button>
-        </div>
-
-        <!-- Mobile Slide-In Drawer -->
-        <div id="mobile-menu" class="fixed top-0 left-0 h-screen w-[85vw] max-w-sm drawer-blur border-r border-white/10 flex flex-col pt-32 px-8 gap-8 md:hidden transform -translate-x-full transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] z-40 shadow-[20px_0_50px_rgba(0,0,0,0.8)]">
-            
-            <button onclick="navigateTo('home'); toggleMobileMenu();" class="text-left text-3xl text-white hover:text-omni-blue hover:translate-x-3 transition-all uppercase tracking-widest font-black flex items-center gap-4 group">
-                <span class="w-0 h-[2px] bg-gradient-to-r from-omni-blue to-omni-red group-hover:w-8 transition-all duration-300"></span> Nexus
-            </button>
-            
-            <button onclick="navigateTo('solutions'); toggleMobileMenu();" class="text-left text-3xl text-white hover:text-omni-blue hover:translate-x-3 transition-all uppercase tracking-widest font-black flex items-center gap-4 group">
-                <span class="w-0 h-[2px] bg-gradient-to-r from-omni-blue to-omni-red group-hover:w-8 transition-all duration-300"></span> Modules
-            </button>
-            
-            <button onclick="navigateTo('about'); toggleMobileMenu();" class="text-left text-3xl text-white hover:text-omni-blue hover:translate-x-3 transition-all uppercase tracking-widest font-black flex items-center gap-4 group">
-                <span class="w-0 h-[2px] bg-gradient-to-r from-omni-blue to-omni-red group-hover:w-8 transition-all duration-300"></span> Core
-            </button>
-            
-            <button onclick="navigateTo('contact'); toggleMobileMenu();" class="text-left text-3xl text-white hover:text-omni-blue hover:translate-x-3 transition-all uppercase tracking-widest font-black flex items-center gap-4 group">
-                <span class="w-0 h-[2px] bg-gradient-to-r from-omni-blue to-omni-red group-hover:w-8 transition-all duration-300"></span> Terminal
-            </button>
-
-            <div class="mt-auto pb-12">
-                <div class="text-xs text-omni-blue uppercase tracking-widest border-t border-white/10 pt-6 font-bold">System Status: Online</div>
+                <!-- Universal Hamburger Button -->
+                <button id="mobile-menu-btn" class="relative text-white focus:outline-none p-2 h-14 w-14 flex items-center justify-center overflow-hidden group border border-white/10 hover:border-white/30 transition-all duration-300 bg-black/40 rounded shadow-lg">
+                    <span class="absolute left-0 top-0 w-[3px] h-full bg-omni-blue transform -translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></span>
+                    <span class="absolute right-0 bottom-0 w-[3px] h-full bg-omni-red transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></span>
+                    <div id="icon-container" class="relative z-10 transition-transform duration-500 flex items-center justify-center">
+                        <i data-lucide="menu" class="w-8 h-8"></i>
+                    </div>
+                </button>
             </div>
         </div>
     </nav>
 
+    <!-- ================= COMMAND DRAWER (SIDEBAR) ================= -->
+    <!-- Fixed left, full height, custom width for PC vs Mobile -->
+    <div id="mobile-menu" class="fixed top-0 left-0 h-screen w-[85vw] md:w-96 drawer-blur border-r border-white/10 flex flex-col pt-32 pb-6 transform -translate-x-full transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] z-40 shadow-[20px_0_50px_rgba(0,0,0,0.8)]">
+        
+        <!-- Scrollable Content Area for 40+ Tools -->
+        <div class="flex-1 overflow-y-auto px-8 sidebar-scroll flex flex-col gap-2">
+            
+            <!-- Main Core Pages -->
+            <div class="mb-6 border-b border-white/10 pb-6 space-y-4">
+                <button onclick="navigateTo('home'); toggleMobileMenu();" class="w-full text-left text-xl text-white hover:text-omni-blue transition-all uppercase tracking-widest font-black flex items-center gap-3 group">
+                    <i data-lucide="home" class="w-5 h-5 text-gray-400 group-hover:text-omni-blue transition-colors"></i> Nexus Home
+                </button>
+                <button onclick="navigateTo('solutions'); toggleMobileMenu();" class="w-full text-left text-xl text-white hover:text-omni-blue transition-all uppercase tracking-widest font-black flex items-center gap-3 group">
+                    <i data-lucide="cpu" class="w-5 h-5 text-gray-400 group-hover:text-omni-blue transition-colors"></i> Core Modules
+                </button>
+                <button onclick="navigateTo('about'); toggleMobileMenu();" class="w-full text-left text-xl text-white hover:text-omni-blue transition-all uppercase tracking-widest font-black flex items-center gap-3 group">
+                    <i data-lucide="book-open" class="w-5 h-5 text-gray-400 group-hover:text-omni-blue transition-colors"></i> Directives
+                </button>
+                <button onclick="navigateTo('contact'); toggleMobileMenu();" class="w-full text-left text-xl text-white hover:text-omni-blue transition-all uppercase tracking-widest font-black flex items-center gap-3 group">
+                    <i data-lucide="terminal" class="w-5 h-5 text-gray-400 group-hover:text-omni-blue transition-colors"></i> Terminal Access
+                </button>
+            </div>
+
+            <!-- Header for Tools Section -->
+            <h4 class="text-xs text-omni-red font-bold uppercase tracking-[0.2em] mb-4">Systems & Tooling</h4>
+
+            <!-- ================= NESTED ACCORDION SYSTEM ================= -->
+            
+            <!-- ACCORDION 1: Data Analytics -->
+            <div class="accordion-item mb-2">
+                <button class="accordion-btn w-full text-left text-lg text-gray-200 hover:text-white transition-all tracking-wider font-bold flex items-center justify-between py-2 group">
+                    <span class="flex items-center gap-3"><i data-lucide="bar-chart-2" class="w-4 h-4 text-omni-blue"></i> Data Analytics</span>
+                    <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon text-gray-500 group-hover:text-omni-blue"></i>
+                </button>
+                <!-- Level 2 Sub-menu -->
+                <div class="accordion-content hidden flex-col pl-7 border-l border-white/10 ml-2 mt-2 space-y-2">
+                    
+                    <!-- Nested Accordion: Predictive Models -->
+                    <div class="accordion-item">
+                        <button class="accordion-btn w-full text-left text-sm text-gray-400 hover:text-omni-blue transition-all tracking-wider font-medium flex items-center justify-between py-2">
+                            Predictive Models <i data-lucide="chevron-down" class="w-3 h-3 chevron-icon"></i>
+                        </button>
+                        <!-- Level 3 Tools -->
+                        <div class="accordion-content hidden flex-col pl-4 border-l border-white/5 ml-1 mt-1 space-y-3 pt-2 pb-3">
+                            <a href="#" class="text-xs text-gray-500 hover:text-white transition-colors block flex items-center gap-2"><div class="w-1 h-1 bg-omni-red rounded-full"></div> Market Forecaster</a>
+                            <a href="#" class="text-xs text-gray-500 hover:text-white transition-colors block flex items-center gap-2"><div class="w-1 h-1 bg-omni-red rounded-full"></div> Anomaly Detector</a>
+                            <a href="#" class="text-xs text-gray-500 hover:text-white transition-colors block flex items-center gap-2"><div class="w-1 h-1 bg-omni-red rounded-full"></div> Sentiment Engine</a>
+                        </div>
+                    </div>
+
+                    <!-- Direct Tool Link (No sub-menu) -->
+                    <a href="#" class="text-sm text-gray-400 hover:text-omni-blue transition-all tracking-wider font-medium py-2 block">Quantum Sorter</a>
+                    <a href="#" class="text-sm text-gray-400 hover:text-omni-blue transition-all tracking-wider font-medium py-2 block">Node Mapper</a>
+                </div>
+            </div>
+
+            <!-- ACCORDION 2: Security Operations -->
+            <div class="accordion-item mb-2">
+                <button class="accordion-btn w-full text-left text-lg text-gray-200 hover:text-white transition-all tracking-wider font-bold flex items-center justify-between py-2 group">
+                    <span class="flex items-center gap-3"><i data-lucide="shield" class="w-4 h-4 text-omni-red"></i> Security Ops</span>
+                    <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon text-gray-500 group-hover:text-omni-red"></i>
+                </button>
+                <!-- Level 2 Sub-menu -->
+                <div class="accordion-content hidden flex-col pl-7 border-l border-white/10 ml-2 mt-2 space-y-2 pb-2">
+                    <a href="#" class="text-sm text-gray-400 hover:text-omni-red transition-all tracking-wider font-medium py-2 block">Aegis Dashboard</a>
+                    <a href="#" class="text-sm text-gray-400 hover:text-omni-red transition-all tracking-wider font-medium py-2 block">Threat Matrix</a>
+                    <a href="#" class="text-sm text-gray-400 hover:text-omni-red transition-all tracking-wider font-medium py-2 block">Encrypted Vault</a>
+                </div>
+            </div>
+
+            <!-- ACCORDION 3: Infrastructure / API -->
+            <div class="accordion-item mb-2">
+                <button class="accordion-btn w-full text-left text-lg text-gray-200 hover:text-white transition-all tracking-wider font-bold flex items-center justify-between py-2 group">
+                    <span class="flex items-center gap-3"><i data-lucide="network" class="w-4 h-4 text-omni-purple"></i> Infrastructure</span>
+                    <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon text-gray-500 group-hover:text-omni-purple"></i>
+                </button>
+                <!-- Level 2 Sub-menu -->
+                <div class="accordion-content hidden flex-col pl-7 border-l border-white/10 ml-2 mt-2 space-y-2 pb-2">
+                    <a href="#" class="text-sm text-gray-400 hover:text-omni-purple transition-all tracking-wider font-medium py-2 block">REST Bridges</a>
+                    <a href="#" class="text-sm text-gray-400 hover:text-omni-purple transition-all tracking-wider font-medium py-2 block">GraphQL Hub</a>
+                    <a href="#" class="text-sm text-gray-400 hover:text-omni-purple transition-all tracking-wider font-medium py-2 block">Satellite Uplink</a>
+                </div>
+            </div>
+            
+            <!-- You can easily copy and paste the Accordion Item blocks above to add the rest of your 40 tools! -->
+            
+        </div>
+
+        <div class="mt-auto px-8 pt-6 border-t border-white/10">
+            <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                <div class="text-xs text-gray-400 uppercase tracking-widest font-bold">Network Secure</div>
+            </div>
+        </div>
+    </div>
+
     <!-- ================= MAIN CONTENT ================= -->
+    <!-- Opacity fades when sidebar opens -->
     <main id="main-content" class="relative z-10 transition-opacity duration-500 ease-in-out">
 
-        <!-- ================= PAGE: HOME ================= -->
+        <!-- PAGE: HOME -->
         <div id="page-home" class="page-section active max-w-7xl mx-auto px-6 flex flex-col justify-center items-center text-center min-h-[90vh]">
-            
             <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/20 bg-black/40 text-white text-xs font-bold uppercase tracking-[0.2em] mb-8 shadow-lg backdrop-blur-sm">
                 <span class="w-2 h-2 rounded-full bg-omni-red animate-pulse"></span>
                 Omni-Science Protocol v.9.0
             </div>
             
-            <!-- Headline: High Contrast White/Silver instead of dark gradient -->
             <h1 class="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter mb-4 leading-[1.1] text-white">
                 DATA SYNERGY.<br>
                 <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-gray-400">ENTERPRISE SCALE.</span>
             </h1>
 
-            <!-- Brand Accent Line -->
             <div class="h-1.5 w-32 bg-gradient-to-r from-omni-blue via-omni-purple to-omni-red rounded-full mb-8 mx-auto shadow-[0_0_15px_rgba(0,94,184,0.5)]"></div>
             
-            <!-- Paragraph: Lighter text color and text-shadow for readability -->
             <p class="text-lg md:text-xl text-gray-200 mb-12 max-w-3xl mx-auto font-medium tracking-wide text-readable-shadow">
                 We synthesize petabytes of atmospheric, financial, and synthetic data into a single pane of glass. The ultimate cognitive engine for your enterprise.
             </p>
             
             <div class="flex flex-col sm:flex-row gap-6 justify-center items-center w-full">
-                <!-- Primary Button utilizing brand colors -->
-                <button onclick="navigateTo('solutions')" class="group relative px-8 py-4 bg-white text-black font-bold uppercase tracking-wider overflow-hidden rounded shadow-xl">
+                <!-- Open Sidebar Drawer instead of scrolling down -->
+                <button onclick="toggleMobileMenu()" class="group relative px-8 py-4 bg-white text-black font-bold uppercase tracking-wider overflow-hidden rounded shadow-xl">
                     <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-omni-blue to-omni-red transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></div>
                     <span class="relative z-10 flex items-center gap-2 group-hover:text-white transition-colors">
-                        Explore Modules <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        Access Tooling <i data-lucide="layers" class="w-4 h-4"></i>
                     </span>
                 </button>
             </div>
         </div>
 
-        <!-- ================= PAGE: SOLUTIONS ================= -->
+        <!-- PAGE: SOLUTIONS -->
         <div id="page-solutions" class="page-section max-w-7xl mx-auto px-6">
             <div class="mb-16 md:mt-12 text-center md:text-left">
                 <h2 class="text-4xl md:text-6xl font-black tracking-tight mb-4 uppercase text-white">Ecosystem <span class="text-transparent bg-clip-text bg-gradient-to-r from-omni-blue to-omni-red">Modules</span></h2>
@@ -319,7 +386,7 @@
             </div>
         </div>
 
-        <!-- ================= PAGE: ABOUT (CORE) ================= -->
+        <!-- PAGE: ABOUT (CORE) -->
         <div id="page-about" class="page-section max-w-5xl mx-auto px-6">
              <div class="mb-16 md:mt-12 text-center">
                 <h2 class="text-4xl md:text-6xl font-black tracking-tight mb-4 uppercase text-white">The <span class="text-transparent bg-clip-text bg-gradient-to-r from-omni-red to-omni-purple">Core</span> Directives</h2>
@@ -363,7 +430,7 @@
             </div>
         </div>
 
-        <!-- ================= PAGE: CONTACT (TERMINAL) ================= -->
+        <!-- PAGE: CONTACT (TERMINAL) -->
         <div id="page-contact" class="page-section max-w-4xl mx-auto px-6">
             <div class="mb-12 md:mt-12 text-center">
                 <h2 class="text-4xl md:text-6xl font-black tracking-tight mb-4 uppercase text-white">Access <span class="text-transparent bg-clip-text bg-gradient-to-r from-omni-blue to-omni-red">Terminal</span></h2>
@@ -394,15 +461,13 @@
                 </button>
             </form>
         </div>
-
     </main>
 
     <script>
         // --- 1. UI & Navigation Logic ---
-        
         lucide.createIcons();
 
-        // Menu Elements
+        // Universal Drawer Toggle
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
         const mainContent = document.getElementById('main-content');
@@ -422,7 +487,7 @@
                 
                 iconContainer.style.transform = 'rotate(180deg)';
                 setTimeout(() => {
-                    iconContainer.innerHTML = '<i data-lucide="x" class="w-7 h-7 text-white"></i>';
+                    iconContainer.innerHTML = '<i data-lucide="x" class="w-8 h-8 text-white"></i>';
                     lucide.createIcons();
                 }, 150);
             } else {
@@ -432,53 +497,61 @@
 
                 iconContainer.style.transform = 'rotate(0deg)';
                 setTimeout(() => {
-                    iconContainer.innerHTML = '<i data-lucide="menu" class="w-7 h-7 text-white"></i>';
+                    iconContainer.innerHTML = '<i data-lucide="menu" class="w-8 h-8 text-white"></i>';
                     lucide.createIcons();
                 }, 150);
             }
         }
 
-        window.addEventListener('resize', () => {
-            if (window.innerWidth >= 768 && isMenuOpen) { 
-                toggleMobileMenu();
-                mainContent.classList.remove('opacity-0', 'pointer-events-none');
-            }
+        // Accordion Logic (Tabs within Tabs)
+        const accordionBtns = document.querySelectorAll('.accordion-btn');
+
+        accordionBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Find the content div immediately following the button
+                const content = this.nextElementSibling;
+                // Find the chevron icon inside this specific button
+                const icon = this.querySelector('.chevron-icon');
+
+                // Toggle visibility
+                if (content.classList.contains('hidden')) {
+                    content.classList.remove('hidden');
+                    content.classList.add('flex');
+                    if (icon) icon.style.transform = 'rotate(180deg)';
+                } else {
+                    content.classList.add('hidden');
+                    content.classList.remove('flex');
+                    if (icon) icon.style.transform = 'rotate(0deg)';
+                }
+            });
         });
 
+        // Page Routing Logic
         function navigateTo(pageId) {
             const pages = document.querySelectorAll('.page-section');
             pages.forEach(page => page.classList.remove('active'));
-
-            const navLinks = document.querySelectorAll('.nav-link');
-            navLinks.forEach(link => link.classList.remove('active-link'));
 
             const targetPage = document.getElementById('page-' + pageId);
             if (targetPage) {
                 targetPage.classList.add('active');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
-
-            const activeNav = document.getElementById('nav-' + pageId);
-            if(activeNav) activeNav.classList.add('active-link');
         }
 
-        // --- 2. REFINED SUBTLE NETWORK ANIMATION ---
-        
+        // --- 2. CANVAS NETWORK ANIMATION ---
         const canvas = document.getElementById('network-canvas');
         const ctx = canvas.getContext('2d');
         
         let width, height;
         let particles = [];
-        // Slightly fewer particles to reduce visual clutter
         const particleCount = window.innerWidth < 768 ? 40 : 90; 
         
-        // Colors are now mostly transparent whites/grays, with only rare pops of brand colors
         const colors = [
             'rgba(255, 255, 255, 0.4)', 
             'rgba(255, 255, 255, 0.2)', 
             'rgba(255, 255, 255, 0.1)', 
-            'rgba(0, 94, 184, 0.6)', // Faint blue
-            'rgba(200, 16, 46, 0.6)'  // Faint red
+            'rgba(0, 94, 184, 0.6)', 
+            'rgba(200, 16, 46, 0.6)'  
         ];
 
         let mouse = { x: null, y: null, radius: 150 };
@@ -504,9 +577,9 @@
             constructor() {
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
-                this.vx = (Math.random() - 0.5) * 0.5; // Slower, calmer movement
+                this.vx = (Math.random() - 0.5) * 0.5; 
                 this.vy = (Math.random() - 0.5) * 0.5;
-                this.baseRadius = Math.random() * 1.5 + 0.5; // Smaller dots
+                this.baseRadius = Math.random() * 1.5 + 0.5; 
                 this.radius = this.baseRadius;
                 this.color = colors[Math.floor(Math.random() * colors.length)];
             }
@@ -562,7 +635,6 @@
                     let dy = particles[i].y - particles[j].y;
                     let distance = Math.sqrt(dx * dx + dy * dy);
                     
-                    // Lines are now much more transparent (max 15% opacity instead of 100%)
                     if (distance < 150) {
                         ctx.beginPath();
                         ctx.strokeStyle = `rgba(255, 255, 255, ${(1 - distance/150) * 0.15})`;
@@ -579,7 +651,6 @@
         window.addEventListener('resize', initCanvas);
         initCanvas();
         animateCanvas();
-
     </script>
 </body>
 </html>
